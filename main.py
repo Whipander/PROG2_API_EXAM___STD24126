@@ -1,7 +1,8 @@
+import base64
 from typing import List
 from fastapi import FastAPI
-from pydantic import BaseModel
-from datetime import datetime
+from datetime import  datetime
+from pydantic import BaseModel, datetime_parse
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -10,7 +11,19 @@ app = FastAPI()
 @app.get("/ping")
 def get_ping():
     return Response(content = "pong", status_code=200)
+#BONUS
+@app.get("/ping/auth")
+def get_auth(request: Request):
+    required_value = "admin:123456"
+    required_value_bytes = required_value.encode("utf-8")
+    encoded_required_value = base64.b64encode(required_value_bytes)
+    encoded_request_value_str = encoded_required_value.decode("utf-8")
+    print(encoded_request_value_str)
+    request_value = request.headers.get("Authorization").split(" ")[1]
 
+    if encoded_request_value_str != request_value:
+        return JSONResponse(status_code=403, content={"message": "ressource forbidden"})
+    return Response(status_code=200, content="pong" )
 #2
 @app.get("/home")
 def get_home():
@@ -26,13 +39,12 @@ class Post(BaseModel):
     content: str
     creation_datetime: datetime
 
-
 posts_store: List[Post] = []
 
 def serialize_post():
     serialized_post = []
     for post in posts_store:
-        serialized_post.append(post.dict())
+        serialized_post.append(post.model_dump())
     return serialized_post
 @app.post("/posts")
 def create_post(posts_to_add : List[Post]):
@@ -48,13 +60,13 @@ def get_posts():
 @app.put("/posts")
 def update_post(posts_to_update : List[Post]):
     for post in posts_to_update:
-        found = False
+        is_found = False
         for index, old_post in enumerate(posts_store):
             if old_post.title == post.title:
                 posts_store[index] = post
-                found = True
+                is_found = True
                 break
-            if not found:
+            if not is_found:
                 posts_store.append(post)
     return JSONResponse(content={"posts": serialize_post()}, status_code=200)
 #3
