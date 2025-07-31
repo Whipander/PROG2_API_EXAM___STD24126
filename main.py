@@ -1,8 +1,8 @@
 import base64
 from typing import List
 from fastapi import FastAPI
-from datetime import  datetime
-from pydantic import BaseModel, datetime_parse
+from datetime import datetime
+from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -44,7 +44,8 @@ posts_store: List[Post] = []
 def serialize_post():
     serialized_post = []
     for post in posts_store:
-        serialized_post.append(post.model_dump())
+        post.creation_datetime = str(post.creation_datetime)
+        serialized_post.append(post.dict())
     return serialized_post
 @app.post("/posts")
 def create_post(posts_to_add : List[Post]):
@@ -64,10 +65,10 @@ def update_post(posts_to_update : List[Post]):
         for index, old_post in enumerate(posts_store):
             if old_post.title == post.title:
                 posts_store[index] = post
-                is_found = True
-                break
-            if not is_found:
-                posts_store.append(post)
+            is_found = True
+            break
+        if not is_found:
+            posts_store.append(post)
     return JSONResponse(content={"posts": serialize_post()}, status_code=200)
 #3
 @app.get("/{full_path:path}")
