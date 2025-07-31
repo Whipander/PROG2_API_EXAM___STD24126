@@ -17,3 +17,10 @@ def get_home():
     with open ("home.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     return Response(content=html_content, status_code=200)
+
+#3
+@app.get("/{full_path:path}")
+def catch_all():
+    with open("404.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return Response(content=html_content, status_code=404, media_type="text/html")
