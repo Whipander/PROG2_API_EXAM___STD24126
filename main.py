@@ -18,7 +18,6 @@ def get_auth(request: Request):
     required_value_bytes = required_value.encode("utf-8")
     encoded_required_value = base64.b64encode(required_value_bytes)
     encoded_request_value_str = encoded_required_value.decode("utf-8")
-    print(encoded_request_value_str)
     request_value = request.headers.get("Authorization").split(" ")[1]
 
     if encoded_request_value_str != request_value:
