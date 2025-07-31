@@ -18,12 +18,6 @@ def get_home():
         html_content = f.read()
     return Response(content=html_content, status_code=200)
 
-#3
-@app.get("/{full_path:path}")
-def catch_all():
-    with open("404.html", "r", encoding="utf-8") as file:
-        html_content = file.read()
-    return Response(content=html_content, status_code=404, media_type="text/html")
 
 #4
 class Post(BaseModel):
@@ -38,7 +32,7 @@ posts_store: List[Post] = []
 def serialize_post():
     serialized_post = []
     for post in posts_store:
-        serialized_post.append(post.model_dump())
+        serialized_post.append(post.dict())
     return serialized_post
 @app.post("/posts")
 def create_post(posts_to_add : List[Post]):
@@ -49,7 +43,7 @@ def create_post(posts_to_add : List[Post]):
 #5
 @app.get("/posts")
 def get_posts():
-    return JSONResponse(content=serialize_post(), status_code=200)
+    return JSONResponse(content={"posts":serialize_post()}, status_code=200)
 #6
 @app.put("/posts")
 def update_post(posts_to_update : List[Post]):
@@ -62,4 +56,10 @@ def update_post(posts_to_update : List[Post]):
                 break
             if not found:
                 posts_store.append(post)
-    return JSONResponse(content=serialize_post(), status_code=200)
+    return JSONResponse(content={"posts": serialize_post()}, status_code=200)
+#3
+@app.get("/{full_path:path}")
+def catch_all():
+    with open("404.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return Response(content=html_content, status_code=404, media_type="text/html")
